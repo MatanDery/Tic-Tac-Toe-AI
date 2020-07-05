@@ -171,6 +171,77 @@ def med_ai(grid, symbol):
     else:
         return med_ai(grid, symbol)
 
+def find_avil(grid):
+    available_spots =[]
+    for i in range(3):
+        for j in range(3):
+            if grid[i][j] == '_':
+                available_spots.append((i, j))
+    return available_spots
+
+
+def minimax(grid, depth, maxim, sym):
+    if sym == 'X':
+        adv_sym = 'O'
+    else:
+        adv_sym = 'X'
+    fake_grid = grid.copy()
+    available_spots = find_avil(grid)
+    if depth == 0 or len(available_spots) == 0:
+        won = check_win(fake_grid)
+        if won is not None:
+            if sym in won:
+                return 1
+            else:
+                return -1
+        else:
+            return 0
+
+    if maxim:
+        max_val = - 10000
+        for spot in available_spots:
+            fake_grid[spot[0]][spot[1]] = sym
+            evalu = minimax(fake_grid, depth-1, False, sym)
+            max_val = max(max_val, evalu)
+        return max_val
+    else:
+        min_val = 10000
+        for spot in available_spots:
+            fake_grid[spot[0]][spot[1]] = adv_sym
+            evalu = minimax(fake_grid, depth-1, True, sym)
+            max_val = min(min_val, evalu)
+        return min_val
+
+
+    # fake_grid = grid.copy()
+    # if symbol == 'X':
+    #     adv_sym = 'O'
+    # else:
+    #     adv_sym = 'X'
+    # available_spots = find_avil(fake_grid)
+    # scores = [0]*len(available_spots)
+    # won = check_win(fake_grid)
+    # if won is not None:
+    #     if symbol in won:
+    #         if cnt % 2 == 0:
+    #             return 1
+    #         return -1
+    #     else:
+    #         if cnt % 2 == 0:
+    #             return -1
+    #         return 1
+    #
+    # if len(available_spots) != 0:
+    #     next_turn = available_spots[0]
+    #     fake_grid[next_turn[0]][next_turn[1]] = symbol
+    #
+    #     return minimax(fake_grid, adv_sym, cnt+1)
+    # else:
+    #     return 0
+
+
+
+
 
 
 def get_commands():
@@ -190,6 +261,9 @@ def get_commands():
                     players.append('user')
                 if i == "medium":
                     players.append('medium')
+                if i == "hard":
+                    players.append('hard')
+
 
             return players
     else:
@@ -204,6 +278,7 @@ def game(players):
     turn_cnt = 0
 
     while True:
+        print(players)
         if ch_draw(grid) is not None:
             print('Draw')
             main()
@@ -218,6 +293,7 @@ def game(players):
         else:
             symbol = 'O'
 
+        print(players[turn_cnt])
         if players[turn_cnt] == 'easy':
             moved = easy_ai(grid, symbol)
             if moved:
@@ -231,6 +307,13 @@ def game(players):
                 print_grid(grid)
                 turn_cnt = (turn_cnt + 1) % 2
                 continue
+
+        if players[turn_cnt] == 'hard':
+            minimax(grid, 9, True, symbol)
+            print_grid(grid)
+            turn_cnt = (turn_cnt + 1) % 2
+            continue
+
 
         if players[turn_cnt] == 'user':
             moved = next_move(grid, symbol)
