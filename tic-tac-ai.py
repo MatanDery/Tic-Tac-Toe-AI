@@ -1,5 +1,6 @@
 # write your code here
 from random import randint
+from collections import Counter
 
 def make_grid(cells):
     grid = []
@@ -103,6 +104,75 @@ def easy_ai(grid, symbol):
     else:
         return easy_ai(grid, symbol)
 
+def cross_can_win(grid, symbol):
+    if (grid[0][0] + grid[1][1] + grid[2][2]).count(symbol) == 2:
+        for i in range(3):
+            if grid[i][i] == '_':
+                return (i, i)
+    if(grid[0][2] + grid[1][1] + grid[2][0]).count(symbol) == 2:
+        for i in range(3):
+            if grid[i][2-i] == '_':
+                return (i, 2-i)
+    return False
+
+
+
+def rows_can_win(grid, symbol):
+    for i, line in enumerate(grid):
+        if line.count(symbol) == 2:
+            for j, char in enumerate(line):
+                if char == '_':
+                    return (i, j)
+    return False
+
+def col_can_win(grid, symbol):
+    for i in range(3):
+        if (grid[0][i] + grid[1][i] + grid[2][i]).count(symbol) == 2:
+            for j in range(3):
+                if grid[j][i] == '_':
+                    return (j, i)
+    return False
+
+def can_med_win(grid, symbol):
+    move = cross_can_win(grid, symbol)
+    if move != False:
+        return move
+    move = rows_can_win(grid, symbol)
+    if move != False:
+        return move
+    move = col_can_win(grid, symbol)
+    if move != False:
+        return move
+    return False
+
+
+
+
+
+def med_ai(grid, symbol):
+    can_win = can_med_win(grid, symbol)
+    if can_win != False:
+        grid[can_win[0]][can_win[1]] = symbol
+        return True
+    else:
+        if symbol == 'X':
+            adv_sym = 'O'
+        elif symbol == 'O':
+            adv_sym = 'X'
+        can_win = can_med_win(grid, adv_sym)
+        if can_win != False:
+            grid[can_win[0]][can_win[1]] = symbol
+            return True
+    move = randint(0, 8)
+    if grid[move//3][move % 3] == '_':
+        print('Making move level "medium"')
+        grid[move // 3][move % 3] = symbol
+        return True
+    else:
+        return med_ai(grid, symbol)
+
+
+
 def get_commands():
     cmd = input('Input command: ')
     if cmd == 'exit':
@@ -118,6 +188,9 @@ def get_commands():
                     players.append('easy')
                 if i == 'user':
                     players.append('user')
+                if i == "medium":
+                    players.append('medium')
+
             return players
     else:
         return get_commands()
@@ -152,6 +225,13 @@ def game(players):
                 turn_cnt = (turn_cnt + 1) % 2
                 continue
 
+        if players[turn_cnt] == 'medium':
+            moved = med_ai(grid, symbol)
+            if moved:
+                print_grid(grid)
+                turn_cnt = (turn_cnt + 1) % 2
+                continue
+
         if players[turn_cnt] == 'user':
             moved = next_move(grid, symbol)
             if moved:
@@ -168,3 +248,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+
