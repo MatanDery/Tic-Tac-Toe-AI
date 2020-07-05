@@ -1,4 +1,6 @@
 # write your code here
+from random import randint
+
 def make_grid(cells):
     grid = []
     for i in range(0, len(cells), 3):
@@ -47,8 +49,7 @@ def next_move(grid):
             print('This cell is occupied! Choose another one!')
             return next_move(grid)
         else:
-            chr = next_player(grid)
-            grid[3-move[1]][move[0]-1] = chr
+            grid[3-move[1]][move[0]-1] = 'X'
             return True
 
 def ch_line(grid):
@@ -71,11 +72,11 @@ def ch_col(grid):
 
 def ch_cross(grid):
     if (grid[0][0] == grid[1][1] == grid[2][2] or
-        grid[0][2] == grid[1][1] == grid[2][0]):
-            if grid[1][1] == 'X':
-                return 'X'
-            if grid[1][1] == 'O':
-                return 'O'
+            grid[0][2] == grid[1][1] == grid[2][0]):
+        if grid[1][1] == 'X':
+            return 'X'
+        if grid[1][1] == 'O':
+            return 'O'
     return
 
 def ch_draw(grid):
@@ -93,28 +94,45 @@ def check_win(grid):
         return ch_cross(grid)+' wins'
     return
 
+def easy_ai(grid):
+    move = randint(0, 8)
+    if grid[move//3][move % 3] == '_':
+        print('Making move level "easy"')
+        grid[move // 3][move % 3] = 'O'
+        return True
+    else:
+        return easy_ai(grid)
+
 
 def main():
-    cells = input('Enter cells: ')
+    cells = '_________'
     grid = make_grid(cells)
     print_grid(grid)
+    player = 'human'
     while True:
-        moved = next_move(grid)
-        if moved:
-            print_grid(grid)
-        won =check_win(grid)
-        if won is not None:
-            print(won)
-            break
         if ch_draw(grid) is not None:
             print('Draw')
             break
-        print('Game not finished')
-        break
+
+        won = check_win(grid)
+        if won is not None:
+            print(won)
+            break
+
+        if player == 'pc':
+            moved = easy_ai(grid)
+            if moved:
+                print_grid(grid)
+                player = 'human'
+                continue
+
+        if player == 'human':
+            moved = next_move(grid)
+            if moved:
+                print_grid(grid)
+                player = 'pc'
+                continue
 
 
 if __name__ == '__main__':
     main()
-
-
-
