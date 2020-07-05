@@ -188,15 +188,14 @@ def minimax_init(grid, depth, maxim, sym):
             if grid[i][j] == '_':
                 fake_grid = deepcopy(grid)
                 fake_grid[i][j] = sym
-                maxim = not maxim
+                sym = switch_sym[sym]
                 score = minimax(fake_grid, depth, maxim, sym)
                 print(score , (i, j))
                 if (score > bestScore):
                     bestScore = score
                     best_spot = (i, j)
 
-    #print(best_spot)
-    grid[best_spot[0]][best_spot[1]] = sym
+    grid[best_spot[0]][best_spot[1]] = switch_sym[sym]
 
 
 def minimax(grid, depth, maxim, sym):
@@ -204,7 +203,6 @@ def minimax(grid, depth, maxim, sym):
         adv_sym = 'O'
     else:
         adv_sym = 'X'
-    #fake_grid = deepcopy(grid)
     fake_grid = grid
     available_spots = find_avil(fake_grid)
     if depth == 0 or len(available_spots) == 0:
