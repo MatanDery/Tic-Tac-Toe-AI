@@ -1,6 +1,7 @@
 # write your code here
 from random import randint
 from collections import Counter
+from copy import copy, deepcopy
 
 def make_grid(cells):
     grid = []
@@ -179,39 +180,57 @@ def find_avil(grid):
                 available_spots.append((i, j))
     return available_spots
 
+def minimax_init(grid, depth, maxim, sym):
+    switch_sym = {'X':'O', 'O':'X'}
+    bestScore = -10000000
+    for i in range(3):
+        for j in range(3):
+            if grid[i][j] == '_':
+                fake_grid = deepcopy(grid)
+                fake_grid[i][j] = sym
+                maxim = not maxim
+                score = minimax(fake_grid, depth, maxim, sym)
+                print(score , (i, j))
+                if (score > bestScore):
+                    bestScore = score
+                    best_spot = (i, j)
+
+    #print(best_spot)
+    grid[best_spot[0]][best_spot[1]] = sym
+
 
 def minimax(grid, depth, maxim, sym):
     if sym == 'X':
         adv_sym = 'O'
     else:
         adv_sym = 'X'
-    fake_grid = grid.copy()
-    available_spots = find_avil(grid)
+    #fake_grid = deepcopy(grid)
+    fake_grid = grid
+    available_spots = find_avil(fake_grid)
     if depth == 0 or len(available_spots) == 0:
         won = check_win(fake_grid)
         if won is not None:
             if sym in won:
-                return 1
+                return 100
             else:
-                return -1
+                return -100
         else:
             return 0
 
     if maxim:
-        max_val = - 10000
+        max_score = -100000
         for spot in available_spots:
             fake_grid[spot[0]][spot[1]] = sym
-            evalu = minimax(fake_grid, depth-1, False, sym)
-            max_val = max(max_val, evalu)
-        return max_val
+            evalu = minimax(fake_grid, depth-1, False, adv_sym)
+            max_score = max(max_score, evalu)
+        return max_score
     else:
-        min_val = 10000
+        min_score = 100000
         for spot in available_spots:
-            fake_grid[spot[0]][spot[1]] = adv_sym
-            evalu = minimax(fake_grid, depth-1, True, sym)
-            max_val = min(min_val, evalu)
-        return min_val
-
+            fake_grid[spot[0]][spot[1]] = sym
+            evalu = minimax(fake_grid, depth-1, True, adv_sym)
+            min_score = min(min_score, evalu)
+        return min_score
 
     # fake_grid = grid.copy()
     # if symbol == 'X':
@@ -309,7 +328,7 @@ def game(players):
                 continue
 
         if players[turn_cnt] == 'hard':
-            minimax(grid, 9, True, symbol)
+            minimax_init(grid, 1000000000, True, symbol)
             print_grid(grid)
             turn_cnt = (turn_cnt + 1) % 2
             continue
