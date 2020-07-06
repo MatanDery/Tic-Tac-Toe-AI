@@ -1,5 +1,4 @@
-# write your code here
-from random import randint
+from random import randint, choice
 from collections import Counter
 from copy import copy, deepcopy
 
@@ -91,7 +90,7 @@ def check_win(grid):
     if ch_line(grid) is not None:
         return ch_line(grid)+' wins'
     if ch_col(grid) is not None:
-        return     ch_col(grid)+' wins'
+        return ch_col(grid)+' wins'
     if ch_cross(grid) is not None:
         return ch_cross(grid)+' wins'
     return
@@ -181,6 +180,10 @@ def find_avil(grid):
     return available_spots
 
 def minimax_init(grid, depth, maxim, sym):
+    if len(find_avil(grid)) == 9:
+        best_spot = choice([(0, 0), (2, 2), (2, 0), (0, 2)])
+        grid[best_spot[0]][best_spot[1]] = sym
+        return
     switch_sym = {'X':'O', 'O':'X'}
     bestScore = -10000000
     for i in range(3):
@@ -188,47 +191,50 @@ def minimax_init(grid, depth, maxim, sym):
             if grid[i][j] == '_':
                 fake_grid = deepcopy(grid)
                 fake_grid[i][j] = sym
-                sym = switch_sym[sym]
-                score = minimax(fake_grid, depth, maxim, sym)
+                score = minimax(fake_grid, depth, False, sym)
+                fake_grid[i][j] = '_'
                 print(score , (i, j))
                 if (score > bestScore):
                     bestScore = score
                     best_spot = (i, j)
 
-    grid[best_spot[0]][best_spot[1]] = switch_sym[sym]
+    grid[best_spot[0]][best_spot[1]] = sym
 
 
 def minimax(grid, depth, maxim, sym):
-    if sym == 'X':
-        adv_sym = 'O'
-    else:
-        adv_sym = 'X'
+    switch_sym = {'X':'O', 'O':'X'}
+    adv_sym = switch_sym[sym]
+
     fake_grid = grid
     available_spots = find_avil(fake_grid)
-    if depth == 0 or len(available_spots) == 0:
-        won = check_win(fake_grid)
-        if won is not None:
-            if sym in won:
-                return 100
-            else:
-                return -100
+    won = check_win(fake_grid)
+    if won is not None:
+        if sym in won:
+            return 100
+        elif adv_sym in won:
+            return -100
         else:
             return 0
-
-    if maxim:
-        max_score = -100000
-        for spot in available_spots:
-            fake_grid[spot[0]][spot[1]] = sym
-            evalu = minimax(fake_grid, depth-1, False, adv_sym)
-            max_score = max(max_score, evalu)
-        return max_score
+    elif len(available_spots) == 0:
+        return 0
     else:
-        min_score = 100000
-        for spot in available_spots:
-            fake_grid[spot[0]][spot[1]] = sym
-            evalu = minimax(fake_grid, depth-1, True, adv_sym)
-            min_score = min(min_score, evalu)
-        return min_score
+        scores = []
+        if maxim:
+            available_spots = find_avil(fake_grid)
+            for spot in available_spots:
+                fake_grid[spot[0]][spot[1]] = sym
+                evalu = minimax(fake_grid, depth-1, False, sym)
+                fake_grid[spot[0]][spot[1]] = '_'
+                scores.append(evalu)
+            return max(scores)
+        else:
+            available_spots = find_avil(fake_grid)
+            for spot in available_spots:
+                fake_grid[spot[0]][spot[1]] = adv_sym
+                evalu = minimax(fake_grid, depth-1, True, sym)
+                fake_grid[spot[0]][spot[1]] = '_'
+                scores.append(evalu)
+            return min(scores)
 
     # fake_grid = grid.copy()
     # if symbol == 'X':
